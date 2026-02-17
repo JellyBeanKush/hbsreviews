@@ -5,7 +5,6 @@ import Header from './components/Header';
 import ReviewCard from './components/ReviewCard';
 import ReviewModal from './components/ReviewModal';
 import StatsView from './components/StatsView';
-import RecommendationsView from './components/RecommendationsView';
 import { Loader2, AlertCircle, ArrowUpDown, ChevronDown } from 'lucide-react';
 
 function App() {
@@ -21,7 +20,6 @@ function App() {
   
   // View States
   const [showStats, setShowStats] = useState(false);
-  const [showRecommendations, setShowRecommendations] = useState(false);
   
   const [visibleCount, setVisibleCount] = useState(24);
   const loaderRef = useRef<HTMLDivElement>(null);
@@ -71,12 +69,12 @@ function App() {
       switch (sortOption) {
         case 'latest':
           return 0; // Handled by reverse below
-        case 'oldest':
-          return 0;
         case 'title-asc':
           return a.title.localeCompare(b.title);
         case 'avg-desc':
           return (b.averageScore || 0) - (a.averageScore || 0);
+        case 'avg-asc':
+           return (a.averageScore || 0) - (b.averageScore || 0);
         case 'jb-desc':
           return (b.jellybeanScore || 0) - (a.jellybeanScore || 0);
         case 'hb-desc':
@@ -109,7 +107,6 @@ function App() {
     const observer = new IntersectionObserver(
       (entries) => {
         if (entries[0].isIntersecting && visibleCount < finalReviews.length) {
-           // Small delay to make it feel natural or just distinct
            setTimeout(() => {
              setVisibleCount((prev) => prev + 24);
            }, 100);
@@ -129,8 +126,8 @@ function App() {
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white">
-        <Loader2 className="w-10 h-10 animate-spin text-primary mb-4" />
-        <p className="animate-pulse font-display font-medium">Loading library...</p>
+        <Loader2 className="w-10 h-10 animate-spin text-white/20 mb-4" />
+        <p className="animate-pulse font-display font-medium text-white/50">Loading library...</p>
       </div>
     );
   }
@@ -138,12 +135,12 @@ function App() {
   if (error) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white p-4 text-center">
-        <AlertCircle className="w-16 h-16 text-primary mb-4" />
+        <AlertCircle className="w-16 h-16 text-red-500 mb-4" />
         <h1 className="text-2xl font-display font-bold mb-2">Oops! Something went wrong.</h1>
-        <p className="text-gray-400 max-w-md mb-6">{error}</p>
+        <p className="text-zinc-500 max-w-md mb-6">{error}</p>
         <button 
           onClick={() => window.location.reload()}
-          className="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-gray-200 transition-colors"
+          className="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-zinc-200 transition-colors"
         >
           Try Again
         </button>
@@ -152,7 +149,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-background text-white font-sans selection:bg-white/20 selection:text-white pb-20">
+    <div className="min-h-screen bg-background text-zinc-100 font-sans selection:bg-white/20 selection:text-white pb-20">
       
       <Header 
         categories={categories}
@@ -161,57 +158,58 @@ function App() {
         searchTerm={searchTerm}
         onSearchChange={setSearchTerm}
         onOpenStats={() => setShowStats(true)}
-        onOpenRecommendations={() => setShowRecommendations(true)}
       />
 
       <main>
-        <div className="container mx-auto px-6 pt-32">
+        <div className="container mx-auto px-4 md:px-6 pt-32 animate-slide-up">
           
           {/* Controls Bar */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 border-b border-white/5 pb-6">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-white/5 pb-4">
             <div className="space-y-1">
-              <h2 className="text-3xl md:text-4xl font-display font-black text-white tracking-tight">
-                {searchTerm ? 'Search Results' : (activeCategory === 'All' ? 'Library' : activeCategory)}
-              </h2>
-              <div className="flex items-center gap-2 text-sm text-gray-500 font-medium">
-                <span>{finalReviews.length} Titles</span>
+              {(searchTerm || activeCategory !== 'All') && (
+                <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
+                  {searchTerm ? 'Search Results' : activeCategory}
+                </h2>
+              )}
+              <div className="flex items-center gap-2 text-sm text-zinc-500 font-medium">
+                <span className="bg-white/5 px-2 py-0.5 rounded border border-white/5">{finalReviews.length} Titles</span>
                 {searchTerm && <span>&bull; Found matching "{searchTerm}"</span>}
               </div>
             </div>
 
             {/* Modern Sort Dropdown */}
-            <div className="relative group">
-              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-gray-400">
-                <ChevronDown className="w-4 h-4 group-hover:text-white transition-colors" />
+            <div className="relative group min-w-[180px]">
+              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-500">
+                <ChevronDown className="w-4 h-4 group-hover:text-zinc-300 transition-colors" />
               </div>
-              <div className="flex items-center bg-zinc-900 border border-white/10 rounded-xl px-4 py-2.5 hover:border-white/20 transition-all shadow-sm">
-                <ArrowUpDown className="w-4 h-4 text-gray-500 mr-3" />
+              <div className="flex items-center bg-zinc-900 border border-white/10 rounded-lg px-4 py-2 hover:border-white/20 transition-all">
+                <ArrowUpDown className="w-3 h-3 text-zinc-500 mr-3" />
                 <select 
                   value={sortOption}
                   onChange={(e) => setSortOption(e.target.value as SortOption)}
-                  className="bg-transparent text-sm font-medium text-white appearance-none outline-none cursor-pointer pr-8 w-full md:w-auto"
+                  className="bg-transparent text-xs font-bold uppercase tracking-wide text-zinc-300 appearance-none outline-none cursor-pointer pr-8 w-full"
                 >
-                  <option value="avg-desc" className="bg-zinc-900">Highest Score</option>
-                  <option value="latest" className="bg-zinc-900">Recently Added</option>
-                  <option value="oldest" className="bg-zinc-900">Oldest Added</option>
-                  <option value="hb-desc" className="bg-zinc-900">Honeybear's Favorites</option>
-                  <option value="jb-desc" className="bg-zinc-900">Jellybean's Favorites</option>
-                  <option value="year-desc" className="bg-zinc-900">Newest Release</option>
-                  <option value="year-asc" className="bg-zinc-900">Oldest Release</option>
-                  <option value="title-asc" className="bg-zinc-900">Alphabetical</option>
+                  <option value="avg-desc" className="bg-zinc-900 text-zinc-300">Highest Average</option>
+                  <option value="avg-asc" className="bg-zinc-900 text-zinc-300">Lowest Average</option>
+                  <option value="latest" className="bg-zinc-900 text-zinc-300">Recently Added</option>
+                  <option value="hb-desc" className="bg-zinc-900 text-zinc-300">Honeybear's Favs</option>
+                  <option value="jb-desc" className="bg-zinc-900 text-zinc-300">Jellybean's Favs</option>
+                  <option value="year-desc" className="bg-zinc-900 text-zinc-300">Newest Release</option>
+                  <option value="year-asc" className="bg-zinc-900 text-zinc-300">Oldest Release</option>
+                  <option value="title-asc" className="bg-zinc-900 text-zinc-300">A-Z</option>
                 </select>
               </div>
             </div>
           </div>
 
           {finalReviews.length === 0 ? (
-             <div className="py-32 text-center text-gray-500">
+             <div className="py-32 text-center text-zinc-600">
                 <p className="text-lg">No reviews found matching your criteria.</p>
-                <button onClick={() => {setSearchTerm(''); setActiveCategory('All');}} className="mt-4 text-white underline">Clear Filters</button>
+                <button onClick={() => {setSearchTerm(''); setActiveCategory('All');}} className="mt-4 text-zinc-400 hover:text-white underline transition-colors">Clear Filters</button>
              </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-4 gap-y-8">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-10">
                 {visibleReviews.map(review => (
                   <ReviewCard 
                     key={review.id} 
@@ -223,8 +221,8 @@ function App() {
               </div>
 
               {visibleCount < finalReviews.length && (
-                <div ref={loaderRef} className="flex justify-center mt-12 py-8 w-full">
-                    <Loader2 className="w-8 h-8 animate-spin text-white/20" />
+                <div ref={loaderRef} className="flex justify-center mt-20 py-8 w-full">
+                    <Loader2 className="w-6 h-6 animate-spin text-white/20" />
                 </div>
               )}
             </>
@@ -233,9 +231,8 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="mt-32 py-12 border-t border-white/5 bg-black/20 text-center">
-        <p className="text-gray-500 text-sm font-medium">HBS Reviews &copy; {new Date().getFullYear()}</p>
-        <p className="mt-2 text-xs text-gray-600">Built with Gemini, React & Google Sheets</p>
+      <footer className="mt-32 py-8 border-t border-white/5 bg-black text-center">
+        <p className="text-zinc-600 text-xs font-bold uppercase tracking-widest">HBS Reviews &copy; {new Date().getFullYear()}</p>
       </footer>
 
       {/* Modals */}
@@ -251,14 +248,6 @@ function App() {
            onClose={() => setShowStats(false)} 
         />
       )}
-
-      {showRecommendations && (
-        <RecommendationsView 
-          reviews={reviews}
-          onClose={() => setShowRecommendations(false)}
-        />
-      )}
-
     </div>
   );
 }

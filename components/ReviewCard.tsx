@@ -9,118 +9,118 @@ interface ReviewCardProps {
 
 const ReviewCard: React.FC<ReviewCardProps> = ({ review, sortOption, onClick }) => {
   
-  // Logic to determine which score and style to use
-  let scoreDisplay: number | null = review.averageScore;
-  let badgeStyle = '';
-
-  // Green -> Red Scale for Standard Average
-  const getStandardBadgeStyle = (score: number) => {
-    // 9-10: Bright Green
-    if (score >= 9) return 'bg-green-600 text-white shadow-[0_0_15px_rgba(22,163,74,0.6)]'; 
-    // 8-9: Emerald
-    if (score >= 8) return 'bg-emerald-600 text-white'; 
-    // 7-8: Lime
-    if (score >= 7) return 'bg-lime-600 text-white'; 
-    // 6-7: Yellow - Use black text for contrast
-    if (score >= 6) return 'bg-yellow-400 text-black font-extrabold'; 
-    // 5-6: Amber - Use black text for contrast
-    if (score >= 5) return 'bg-amber-400 text-black font-extrabold'; 
-    // 4-5: Orange
-    if (score >= 4) return 'bg-orange-500 text-white'; 
-    // 3-4: Dark Orange
-    if (score >= 3) return 'bg-orange-700 text-white'; 
-    // < 3: Red
-    return 'bg-red-700 text-white shadow-[0_0_15px_rgba(185,28,28,0.6)]'; 
-  };
-
-  if (sortOption === 'hb-desc') {
-    scoreDisplay = review.honeybearScore;
-    // Honeybear styling (Amber/Honey)
-    badgeStyle = 'bg-honey text-black font-black shadow-[0_0_15px_rgba(251,191,36,0.6)] ring-2 ring-black/10';
-  } else if (sortOption === 'jb-desc') {
-    scoreDisplay = review.jellybeanScore;
-    // Jellybean styling (Pink/Bean)
-    badgeStyle = 'bg-bean text-white font-black shadow-[0_0_15px_rgba(244,114,182,0.6)] ring-2 ring-black/10';
-  } else {
-    // Default Average
-    scoreDisplay = review.averageScore;
-    badgeStyle = getStandardBadgeStyle(scoreDisplay || 0);
+  // Determine which score to display
+  let score = review.averageScore || 0;
+  
+  if (sortOption === 'hb-desc' && review.honeybearScore !== null) {
+    score = review.honeybearScore;
+  } else if (sortOption === 'jb-desc' && review.jellybeanScore !== null) {
+    score = review.jellybeanScore;
   }
+  
+  // Revised Gradient Logic v4 - "Green with a hint of blue"
+  // 9.0+: 135 (Neon Green) -> 145 (Spring Green). Avoids 150+ (Teal/Blue).
+  // 8.0-8.9: 90 (Lime) -> 125 (True Green).
+  // 7.0-7.9: 55 (Gold) -> 85 (Lime).
+  // 6.0-6.9: 35 (Orange) -> 50 (Golden Orange).
+  // 5.0-5.9: 20 (Rust) -> 30 (Orange).
+  // 4.0-4.9: 10 (Red).
+  // < 4.0: 0 (Deep Red).
+  
+  let hue = 0;
+  let sat = 85;
+  let light = 45;
+
+  if (score >= 9) {
+      // 9.0 -> 135, 10.0 -> 145. 
+      // This is "Green with a hint of blue", preventing the "Too Blue" look of 150+.
+      hue = 135 + ((score - 9) * 10); 
+  } else if (score >= 8) {
+      // 8.0 -> 90, 8.9 -> ~125
+      hue = 90 + ((score - 8) * 35); 
+  } else if (score >= 7) {
+      // 7.0 -> 55, 7.9 -> ~85
+      hue = 55 + ((score - 7) * 30);
+  } else if (score >= 6) {
+      // 6.0 -> 35, 6.9 -> ~50
+      hue = 35 + ((score - 6) * 15); 
+  } else if (score >= 5) {
+      // 5.0 -> 20, 5.9 -> ~30 (Clearly Orange vs Red)
+      hue = 20 + ((score - 5) * 10);
+  } else if (score >= 4) {
+      // 4.x stays Bright Red
+      hue = 10;
+  } else {
+      // < 4.0: Deep Red
+      hue = 0;
+      light = 35; // Darker
+  }
+
+  const badgeStyle = {
+    backgroundColor: `hsl(${hue}, ${sat}%, ${light}%)`,
+    borderColor: `hsl(${hue}, ${sat}%, ${light + 15}%)`,
+    boxShadow: `0 0 15px hsla(${hue}, ${sat}%, ${light}%, 0.4)`
+  };
 
   return (
     <div 
-      className="group relative aspect-[2/3] rounded-xl overflow-hidden cursor-pointer bg-zinc-900 ring-1 ring-white/5 hover:ring-white/20 transition-all duration-300 hover:-translate-y-2 hover:shadow-2xl hover:shadow-black/50"
+      className="group relative aspect-[2/3] rounded-xl overflow-hidden cursor-pointer bg-zinc-900 ring-1 ring-white/10 hover:ring-white/30 transition-all duration-500 ease-[cubic-bezier(0.25,1,0.5,1)] hover:scale-[1.03] shadow-xl hover:shadow-2xl"
       onClick={onClick}
     >
       {/* Background Image */}
       <img 
         src={review.image || `https://picsum.photos/seed/${review.id}/400/600`} 
         alt={review.title}
-        className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105 opacity-90 group-hover:opacity-100"
+        className="w-full h-full object-cover transition-transform duration-700 ease-out group-hover:scale-105 opacity-90 group-hover:opacity-100"
         loading="lazy"
       />
       
-      {/* Gradient for Text Legibility (Bottom Only) */}
-      <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/90 via-black/50 to-transparent opacity-80 transition-opacity duration-300 group-hover:opacity-100" />
-
-      {/* Top LEFT: Score Badge (Bigger) */}
-      {scoreDisplay !== null && (
-        <div className="absolute top-3 left-3 z-20">
-           <div className={`
-             flex items-center justify-center w-12 h-12 rounded-full 
-             font-display font-bold text-xl shadow-lg backdrop-blur-sm
-             transform transition-transform duration-300 group-hover:scale-110
-             ${badgeStyle}
-           `}>
-             {scoreDisplay}
+      {/* Cinematic Vignette */}
+      <div className="absolute inset-0 bg-gradient-to-t from-zinc-950 via-transparent to-transparent opacity-80" />
+      
+      {/* Big Badge: Top Right */}
+      {score > 0 && (
+        <div className="absolute top-3 right-3 z-20">
+           <div 
+             className="w-12 h-12 rounded-full flex items-center justify-center border-2 font-display font-black text-lg tracking-tighter text-white transition-transform duration-500 ease-out group-hover:scale-110"
+             style={badgeStyle}
+           >
+             {score}
            </div>
         </div>
       )}
 
-      {/* Bottom Left: Title & Meta Info */}
-      <div className="absolute bottom-0 left-0 right-0 p-4 z-10 flex flex-col justify-end">
-        <div className="transform transition-transform duration-300 translate-y-1 group-hover:translate-y-0">
-            {/* Meta Pill */}
-            <div className="flex items-center gap-2 mb-2 opacity-80 group-hover:opacity-100 transition-opacity">
-                 <span className="text-[10px] font-bold uppercase tracking-wider bg-white/20 backdrop-blur-md px-1.5 py-0.5 rounded-sm text-white/90">
-                    {review.category}
-                 </span>
-                 {review.year && <span className="text-[10px] text-gray-300 font-medium">{review.year}</span>}
-            </div>
-
-            {/* Title */}
-            <h3 className="text-white font-display font-bold text-lg leading-tight drop-shadow-md line-clamp-2 group-hover:text-white transition-colors duration-300">
-              {review.title}
-            </h3>
+      {/* Bottom Content */}
+      <div className="absolute bottom-0 left-0 right-0 p-4 z-20 transform translate-y-2 group-hover:translate-y-0 transition-transform duration-500 ease-out">
+        
+        {/* Meta Line */}
+        <div className="flex items-center gap-2 mb-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">
+             <span className="text-[10px] font-bold uppercase tracking-wider text-white/70 bg-black/40 px-2 py-0.5 rounded backdrop-blur-sm border border-white/10">
+                {review.category}
+             </span>
+             {review.year && (
+                <span className="text-[10px] font-bold text-white/50">{review.year}</span>
+             )}
         </div>
-      </div>
 
-      {/* Hover Overlay: Center Focus */}
-      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black/60 backdrop-blur-[2px] transition-all duration-300 z-10">
-           <div className="flex items-center gap-6 transform scale-95 group-hover:scale-100 transition-transform duration-300 delay-75">
-                {/* Honeybear */}
-                {review.honeybearScore !== null && (
-                    <div className="flex flex-col items-center">
-                        <span className="text-[9px] uppercase text-honey font-bold tracking-widest mb-1">Honey</span>
-                        <div className="w-10 h-10 rounded-full bg-honey/10 border-2 border-honey flex items-center justify-center mb-1 shadow-[0_0_15px_rgba(251,191,36,0.2)]">
-                             <span className="text-sm font-black text-white">{review.honeybearScore}</span>
-                        </div>
-                    </div>
-                )}
+        {/* Title */}
+        <h3 className="text-white font-display font-bold text-xl leading-tight drop-shadow-md line-clamp-2 mb-1 transition-colors duration-300 group-hover:text-white">
+          {review.title}
+        </h3>
 
-                 {/* Vertical Divider */}
-                 <div className="h-8 w-[1px] bg-white/20"></div>
-
-                 {/* Jellybean */}
-                {review.jellybeanScore !== null && (
-                    <div className="flex flex-col items-center">
-                        <span className="text-[9px] uppercase text-bean font-bold tracking-widest mb-1">Jelly</span>
-                        <div className="w-10 h-10 rounded-full bg-bean/10 border-2 border-bean flex items-center justify-center mb-1 shadow-[0_0_15px_rgba(244,114,182,0.2)]">
-                             <span className="text-sm font-black text-white">{review.jellybeanScore}</span>
-                        </div>
-                    </div>
-                )}
+        {/* Small Breakdown (Only visible on hover) */}
+        <div className="h-0 group-hover:h-auto overflow-hidden transition-all duration-500">
+           <div className="flex items-center gap-3 pt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-500 delay-100">
+                <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-honey"></span>
+                    <span className="text-xs font-bold text-zinc-300">{review.honeybearScore}</span>
+                </div>
+                <div className="flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-bean"></span>
+                    <span className="text-xs font-bold text-zinc-300">{review.jellybeanScore}</span>
+                </div>
            </div>
+        </div>
       </div>
     </div>
   );

@@ -1,5 +1,5 @@
 import Papa from 'papaparse';
-import { Review } from '../types';
+import { Review, ReviewStats } from '../types';
 
 const CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vQZnUjg5fgFkE3jP3arpGJ-SawHBG8QO7F3YO_fqq-jSEg3v404gPfLOj18gfFkmzHaYJa_eBxADsll/pub?gid=0&single=true&output=csv';
 
@@ -8,13 +8,13 @@ const DEMO_REVIEWS: Review[] = [
     id: 'demo-1',
     title: 'Everything Everywhere All At Once',
     category: 'Movie',
-    image: 'https://image.tmdb.org/t/p/original/rKvCys0f9XNS62kryX8r9aY5u57.jpg',
+    image: 'https://picsum.photos/seed/eeao/600/900', // Fixed link
     year: '2022',
     jellybeanScore: 10,
     honeybearScore: 10,
     averageScore: 10,
-    jellybeanReview: "I have never cried so hard at a rock with googly eyes. Existential perfection.",
-    honeybearReview: "Chaotic, beautiful, and profound. The action choreography is top tier.",
+    synopsis: "A middle-aged Chinese immigrant is swept up into an insane adventure in which she alone can save the existence by exploring other universes connecting with the lives she could have led.",
+    review: "Chaotic, beautiful, and profound. The action choreography is top tier. I have never cried so hard at a rock with googly eyes. Existential perfection.",
     creator: 'The Daniels',
     tags: ['Sci-Fi', 'Family'],
     dateWatched: '2023-04-12'
@@ -23,13 +23,13 @@ const DEMO_REVIEWS: Review[] = [
     id: 'demo-2',
     title: 'Succession',
     category: 'TV Series',
-    image: 'https://image.tmdb.org/t/p/original/7X280VjI0C5hE9rG2M9kX71V7F2.jpg',
+    image: 'https://picsum.photos/seed/succession/600/900', // Fixed link
     year: '2018',
     jellybeanScore: 9,
     honeybearScore: 10,
     averageScore: 9.5,
-    jellybeanReview: "A masterclass in tension.",
-    honeybearReview: "Shakespearean tragedy.",
+    synopsis: "The Roy family is known for controlling the biggest media and entertainment company in the world. However, their world changes when their father steps down from the company.",
+    review: "A masterclass in tension. Shakespearean tragedy.",
     creator: 'Jesse Armstrong',
     tags: ['Drama', 'HBO'],
     dateWatched: '2023-05-28',
@@ -42,51 +42,45 @@ const DEMO_REVIEWS: Review[] = [
             jellybeanScore: 8,
             honeybearScore: 9,
             averageScore: 8.5,
-            jellybeanReview: 'Slow start but hooked by the end.',
-            honeybearReview: 'Incredible setup.',
+            synopsis: "Season 1 synopsis...",
+            review: 'Slow start but hooked by the end.',
             tags: [],
             creator: '',
             dateWatched: ''
         }
     ]
-  },
-  {
-    id: 'demo-3',
-    title: 'Elden Ring',
-    category: 'Video Game',
-    image: 'https://image.tmdb.org/t/p/original/bQLNgPR2KyYp5WJ8T9w5l9v8.jpg',
-    year: '2022',
-    jellybeanScore: 8,
-    honeybearScore: 9.5,
-    averageScore: 8.75,
-    jellybeanReview: "Too hard for me but the world is undeniably beautiful.",
-    honeybearReview: "A masterpiece of open world design. I lost 100 hours to this.",
-    creator: 'FromSoftware',
-    tags: ['RPG', 'Fantasy'],
-    dateWatched: '2023-01-15'
   }
 ];
 
 const normalizeHeader = (header: string): string => {
   const h = header.toLowerCase().trim();
-  if (h.includes('title')) return 'title';
-  if (h.includes('category') || h.includes('type')) return 'category';
-  if (h.includes('author') || h.includes('creator') || h.includes('directo') || h.includes('director')) return 'creator';
-  if (h.includes('cover art') || h.includes('image') || h.includes('poster')) return 'image';
-  if (h === 'year' || h.includes('release')) return 'year';
-  if (h.includes('synopsis')) return 'synopsis';
-  if (h.includes('review') || h.includes('notes')) return 'notes';
-  // Flexible score detection
-  if (h.includes('hb score') || h.includes('honeybear score') || (h.includes('hb') && h.includes('avg'))) return 'honeybearScore';
-  if (h.includes('jb score') || h.includes('jellybean score') || (h.includes('jb') && h.includes('avg'))) return 'jellybeanScore';
-  if (h.includes('average') || h.includes('avg')) return 'averageScore';
+  
+  // Basic Metadata
+  if (h.includes('title') || h === 'name') return 'title';
+  if (h.includes('category') || h.includes('type') || h.includes('medium')) return 'category';
+  if (h.includes('author') || h.includes('creator') || h.includes('director') || h.includes('artist')) return 'creator';
+  if (h.includes('cover') || h.includes('image') || h.includes('poster') || h.includes('art')) return 'image';
+  if (h === 'year' || h.includes('release') || h.includes('date')) return 'year';
+  if (h.includes('synopsis') || h.includes('plot') || h.includes('summary')) return 'synopsis';
+  if (h.includes('review') || h.includes('notes') || h.includes('thoughts') || h.includes('comment')) return 'review';
+  
+  // Scores - Be more aggressive matching
+  // Check specific names first
+  if (h.includes('honey') || h.includes('hb')) return 'honeybearScore';
+  if (h.includes('jelly') || h.includes('jb')) return 'jellybeanScore';
+  // Check generic average last
+  if (h.includes('avg') || h.includes('average') || h.includes('final') || h.includes('score')) return 'averageScore';
+  
   return header;
 };
 
-const parseScore = (val: string): number | null => {
-  if (!val) return null;
+const parseScore = (val: any): number | null => {
+  if (val === null || val === undefined) return null;
+  const str = String(val).trim();
+  if (!str) return null;
+  
   // Handle "10.0" or "8.5 / 10" formats
-  const clean = val.toString().replace(/\/.*$/, '').replace(/[^0-9.]/g, '');
+  const clean = str.replace(/\/.*$/, '').replace(/[^0-9.]/g, '');
   const num = parseFloat(clean);
   if (isNaN(num)) return null;
   return num > 10 ? 10 : num; // Cap at 10 just in case
@@ -95,9 +89,9 @@ const parseScore = (val: string): number | null => {
 const normalizeCategory = (cat: string): string => {
     if (!cat) return 'Uncategorized';
     const lower = cat.toLowerCase();
-    if (lower.includes('movie')) return 'Movie';
+    if (lower.includes('movie') || lower.includes('film')) return 'Movie';
     if (lower.includes('tv') || lower.includes('show') || lower.includes('series')) return 'TV Series';
-    if (lower.includes('book')) return 'Book';
+    if (lower.includes('book') || lower.includes('novel')) return 'Book';
     if (lower.includes('game')) return 'Video Game';
     if (lower.includes('music') || lower.includes('album')) return 'Music';
     return cat;
@@ -116,8 +110,10 @@ export const fetchReviews = async (): Promise<Review[]> => {
       skipEmptyLines: true,
       transformHeader: normalizeHeader,
       complete: (results) => {
-        if (results.errors.length || !results.data.length) {
-          console.warn("Sheet failed to load, using DEMO data.");
+        // Papa parse often returns 'errors' for minor things like field mismatches on the last empty line.
+        // We should only fallback if we truly have NO data rows.
+        if (!results.data || results.data.length === 0) {
+          console.warn("Sheet failed to load or is empty, using DEMO data.");
           resolve(DEMO_REVIEWS);
           return;
         }
@@ -125,8 +121,21 @@ export const fetchReviews = async (): Promise<Review[]> => {
         // 1. Parse all rows into objects
         const parsedRows: Review[] = results.data.map((row: any, index: number) => {
             if (!row.title && !row.category) return null;
-            const mainReview = row.notes || row.synopsis || '';
-            const secReview = (row.notes && row.synopsis) ? `Synopsis: ${row.synopsis}` : '';
+
+            const jbScore = parseScore(row.jellybeanScore);
+            const hbScore = parseScore(row.honeybearScore);
+            let avgScore = parseScore(row.averageScore);
+
+            // AUTO-CALCULATE AVERAGE if missing
+            // This prevents rows from being hidden if the 'Average' column in sheets is broken/empty
+            if ((avgScore === null || avgScore === 0) && (jbScore !== null || hbScore !== null)) {
+                 const scores = [jbScore, hbScore].filter(s => s !== null) as number[];
+                 if (scores.length > 0) {
+                     avgScore = scores.reduce((a, b) => a + b, 0) / scores.length;
+                     // Round to 1 decimal
+                     avgScore = Math.round(avgScore * 10) / 10;
+                 }
+            }
 
             return {
                 id: `review-${index}`,
@@ -134,19 +143,23 @@ export const fetchReviews = async (): Promise<Review[]> => {
                 category: normalizeCategory(row.category),
                 image: row.image || '',
                 year: row.year || '',
-                jellybeanScore: parseScore(row.jellybeanScore),
-                honeybearScore: parseScore(row.honeybearScore),
-                averageScore: parseScore(row.averageScore),
-                honeybearReview: mainReview,
-                jellybeanReview: secReview, 
+                jellybeanScore: jbScore,
+                honeybearScore: hbScore,
+                averageScore: avgScore,
+                synopsis: row.synopsis || '',
+                review: row.review || '', 
                 creator: row.creator || '',
                 tags: row.category ? [normalizeCategory(row.category)] : [], 
                 dateWatched: '',
                 seasons: []
             };
-        }).filter((r): r is Review => r !== null);
+        })
+        .filter((r): r is Review => r !== null)
+        // 1.5 Filter out items with no score data at all
+        .filter(r => r.averageScore !== null && r.averageScore > 0);
 
         if (parsedRows.length === 0) {
+             console.warn("No valid reviews found after parsing. Check headers.");
              resolve(DEMO_REVIEWS);
              return;
         }
@@ -160,7 +173,6 @@ export const fetchReviews = async (): Promise<Review[]> => {
              reviewMap.set(r.title.toLowerCase(), r);
         });
 
-        const finalReviews: Review[] = [];
         const seasonRegex = /^(.*?)\s*[-:]?\s*Season\s*(\d+)$/i;
 
         parsedRows.forEach(r => {
@@ -184,46 +196,69 @@ export const fetchReviews = async (): Promise<Review[]> => {
                             year: '' // Explicitly clear year for season rows so it doesn't show up in UI
                         });
                     }
-                    // Sort seasons by number
-                    parent.seasons.sort((a, b) => parseInt(a.seasonNumber || '0') - parseInt(b.seasonNumber || '0'));
-                    
-                    // Do NOT add to finalReviews
-                    return; 
                 }
             }
-            // If not a season, OR parent not found, keep it in top level
-            finalReviews.push(r);
         });
 
-        resolve(finalReviews);
+        // 3. Filter out seasons that are successfully attached to parents from the main list
+        const rootReviews = parsedRows.filter(r => {
+            const match = r.title.match(seasonRegex);
+            if (match) {
+                 const parentTitleRaw = match[1].trim();
+                 const parent = reviewMap.get(cleanTitle(parentTitleRaw)) || reviewMap.get(parentTitleRaw.toLowerCase());
+                 if (parent && parent !== r) return false;
+            }
+            return true;
+        });
+
+        resolve(rootReviews);
       },
       error: (err) => {
-        console.warn("Network error loading sheet, using DEMO data.", err);
-        resolve(DEMO_REVIEWS);
+          console.error("CSV Parse Error:", err);
+          resolve(DEMO_REVIEWS);
       }
     });
   });
 };
 
-export const getStats = (reviews: Review[]) => {
-    const categories: Record<string, number> = {};
-    let totalJ = 0; let countJ = 0;
-    let totalH = 0; let countH = 0;
-    let totalAvg = 0; let countAvg = 0;
+export const getStats = (reviews: Review[]): ReviewStats => {
+  const stats: ReviewStats = {
+    totalReviews: reviews.length,
+    categoryCounts: {},
+    averageJellybean: 0,
+    averageHoneybear: 0,
+    globalAverage: 0
+  };
 
-    reviews.forEach(r => {
-        const cat = r.category || 'Unknown';
-        categories[cat] = (categories[cat] || 0) + 1;
-        if (r.jellybeanScore !== null) { totalJ += r.jellybeanScore; countJ++; }
-        if (r.honeybearScore !== null) { totalH += r.honeybearScore; countH++; }
-        if (r.averageScore !== null) { totalAvg += r.averageScore; countAvg++; }
-    });
+  if (!reviews.length) return stats;
 
-    return {
-        totalReviews: reviews.length,
-        categoryCounts: categories,
-        averageJellybean: countJ ? (totalJ / countJ) : 0,
-        averageHoneybear: countH ? (totalH / countH) : 0,
-        globalAverage: countAvg ? (totalAvg / countAvg) : 0
-    };
+  let totalJb = 0, countJb = 0;
+  let totalHb = 0, countHb = 0;
+  let totalAvg = 0, countAvg = 0;
+
+  reviews.forEach(r => {
+    // Categories
+    const cat = r.category || 'Uncategorized';
+    stats.categoryCounts[cat] = (stats.categoryCounts[cat] || 0) + 1;
+
+    // Scores
+    if (r.jellybeanScore !== null && r.jellybeanScore !== undefined) {
+      totalJb += r.jellybeanScore;
+      countJb++;
+    }
+    if (r.honeybearScore !== null && r.honeybearScore !== undefined) {
+      totalHb += r.honeybearScore;
+      countHb++;
+    }
+    if (r.averageScore !== null && r.averageScore !== undefined) {
+      totalAvg += r.averageScore;
+      countAvg++;
+    }
+  });
+
+  if (countJb > 0) stats.averageJellybean = parseFloat((totalJb / countJb).toFixed(1));
+  if (countHb > 0) stats.averageHoneybear = parseFloat((totalHb / countHb).toFixed(1));
+  if (countAvg > 0) stats.globalAverage = parseFloat((totalAvg / countAvg).toFixed(1));
+
+  return stats;
 };

@@ -12,8 +12,8 @@ interface StatsViewProps {
   onClose: () => void;
 }
 
-// Updated COLORS: Yellow (Honey), Purple (Bean), Green, Blue, Pink, Orange
-const COLORS = ['#fbbf24', '#a855f7', '#22c55e', '#3b82f6', '#ec4899', '#f97316'];
+// Updated COLORS: Yellow (Honey), Pink (Bean), Green, Blue, Purple (new accent), Orange
+const COLORS = ['#fbbf24', '#ec4899', '#22c55e', '#3b82f6', '#a855f7', '#f97316'];
 
 const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
   
@@ -151,7 +151,7 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
                             </div>
                             <div className="flex flex-col items-end">
                                 <span className="text-2xl font-black text-white">+{item.delta.toFixed(1)}</span>
-                                <span className="text-[10px] uppercase font-bold text-gray-500">Diff</span>
+                                <span className="text--[10px] uppercase font-bold text-gray-500">Diff</span>
                             </div>
                         </div>
                     ))}
@@ -179,10 +179,10 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
                                 type="number" 
                                 dataKey="y" 
                                 name="Jellybean" 
-                                stroke="#a855f7" 
+                                stroke="#ec4899" 
                                 domain={[0, 10]} 
                                 tickCount={11}
-                                label={{ value: 'Jellybean Score', angle: -90, position: 'left', fill: '#a855f7', fontSize: 12 }}
+                                label={{ value: 'Jellybean Score', angle: -90, position: 'left', fill: '#ec4899', fontSize: 12 }}
                             />
                             <ZAxis type="category" dataKey="name" name="Title" />
                             <ReTooltip 

@@ -15,21 +15,28 @@
               display: ['Outfit', 'sans-serif'],
             },
             colors: {
-              background: '#0f0a15', // Deep Purple/Black
-              surface: '#1e1b2e',    // Dark Purple Surface
-              primary: '#fbbf24',    // Honey Yellow (Primary Action)
-              primaryHover: '#d97706', 
-              accent: '#a855f7',     // Purple (Accent)
-              honey: '#fbbf24',      // Honeybear (Yellow)
-              bean: '#a855f7',       // Jellybean (Purple)
-              bear: '#451a03',       // Deep Bear Brown
+              background: '#09090b', // Zinc 950
+              surface: '#18181b',    // Zinc 900
+              primary: '#fbbf24',    // Honey
+              accent: '#ec4899',     // Bean (Pink-500)
+              honey: '#fbbf24',      
+              bean: '#ec4899',       
+            },
+            backgroundImage: {
+              'glass': 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
+              'noise': 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.05\'/%3E%3C/svg%3E")',
             },
             animation: {
-              'fade-in-up': 'fadeInUp 0.5s ease-out forwards',
+              'fade-in': 'fadeIn 0.5s ease-out forwards',
+              'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
             },
             keyframes: {
-              fadeInUp: {
-                '0%': { opacity: '0', transform: 'translateY(10px)' },
+              fadeIn: {
+                '0%': { opacity: '0' },
+                '100%': { opacity: '1' },
+              },
+              slideUp: {
+                '0%': { opacity: '0', transform: 'translateY(20px)' },
                 '100%': { opacity: '1', transform: 'translateY(0)' },
               }
             }
@@ -39,13 +46,26 @@
     </script>
     <style>
       body {
-        background-color: #0f0a15;
-        background-image: 
-          radial-gradient(at 0% 0%, rgba(251, 191, 36, 0.08) 0px, transparent 50%),
-          radial-gradient(at 100% 0%, rgba(168, 85, 247, 0.08) 0px, transparent 50%);
-        color: #fff;
+        background-color: #050505;
+        color: #e4e4e7; /* Zinc 200 */
         min-height: 100vh;
+        /* Noise overlay for texture */
+        position: relative;
       }
+      body::before {
+        content: "";
+        position: fixed;
+        top: 0; left: 0; width: 100%; height: 100%;
+        background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)' opacity='0.03'/%3E%3C/svg%3E");
+        pointer-events: none;
+        z-index: 50;
+      }
+      
+      /* Smooth scrolling */
+      html {
+        scroll-behavior: smooth;
+      }
+
       /* Custom scrollbar */
       ::-webkit-scrollbar {
         width: 6px;
@@ -54,11 +74,11 @@
         background: transparent;
       }
       ::-webkit-scrollbar-thumb {
-        background: #a855f7;
+        background: #3f3f46;
         border-radius: 10px;
       }
       ::-webkit-scrollbar-thumb:hover {
-        background: #9333ea;
+        background: #71717a;
       }
     </style>
     <!-- Vite Entry Point -->
@@ -71,13 +91,14 @@
     "react/": "https://esm.sh/react@^19.2.4/",
     "papaparse": "https://esm.sh/papaparse@^5.5.3",
     "lucide-react": "https://esm.sh/lucide-react@^0.574.0",
-    "recharts": "https://esm.sh/recharts@^3.7.0",
     "@google/genai": "https://esm.sh/@google/genai@^1.41.0",
+    "recharts": "https://esm.sh/recharts@^3.7.0",
     "vite": "https://esm.sh/vite@^7.3.1",
     "@vitejs/plugin-react": "https://esm.sh/@vitejs/plugin-react@^5.1.4"
   }
 }
 </script>
+<link rel="stylesheet" href="/index.css">
 </head>
   <body>
     <div id="root"></div>

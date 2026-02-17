@@ -11,8 +11,12 @@ export interface Review {
   averageScore: number | null;
   
   // Reviews
-  jellybeanReview: string;
-  honeybearReview: string;
+  synopsis: string; // From Column F
+  review: string;   // From Column H (Review/Notes)
+  
+  // Backward compatibility / Specific if needed (we can ignore these or map 'review' to them if we wanted)
+  jellybeanReview?: string;
+  honeybearReview?: string;
   
   // Metadata
   creator?: string; // Director, Author, Artist
@@ -32,4 +36,4 @@ export interface ReviewStats {
   globalAverage: number;
 }
 
-export type SortOption = 'latest' | 'oldest' | 'title-asc' | 'avg-desc' | 'jb-desc' | 'hb-desc' | 'year-desc' | 'year-asc';
+export type SortOption = 'latest' | 'title-asc' | 'avg-desc' | 'avg-asc' | 'jb-desc' | 'hb-desc' | 'year-desc' | 'year-asc';
