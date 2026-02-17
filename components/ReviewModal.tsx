@@ -40,28 +40,23 @@ const ReviewModal: React.FC<ReviewModalProps> = ({ review, onClose }) => {
 
   const score = review.averageScore || 0;
   
-  // Revised Gradient Logic v4 - "Green with a hint of blue"
-  // 9.0+: 135 (Neon Green) -> 145 (Spring Green). Avoids 150+ (Teal/Blue).
-  // 8.0-8.9: 90 (Lime) -> 125 (True Green).
-  // 7.0-7.9: 55 (Gold) -> 85 (Lime).
-  // 6.0-6.9: 35 (Orange) -> 50 (Golden Orange).
-  // 5.0-5.9: 20 (Rust) -> 30 (Orange).
-  // 4.0-4.9: 10 (Red).
-  // < 4.0: 0 (Deep Red).
+  // Revised Gradient Logic v8
   let hue = 0;
   let sat = 85;
   let light = 55; // Default text lightness
 
   if (score >= 9) {
-      hue = 135 + ((score - 9) * 10); 
+      hue = 130 + ((score - 9) * 15); 
   } else if (score >= 8) {
-      hue = 90 + ((score - 8) * 35); 
+      hue = 85 + ((score - 8) * 40); 
   } else if (score >= 7) {
-      hue = 55 + ((score - 7) * 30);
+      hue = 60 + ((score - 7) * 22);
   } else if (score >= 6) {
-      hue = 35 + ((score - 6) * 15); 
+      // 6.0 -> 42 (Gold/Amber), 6.9 -> 58 (Yellow-Gold)
+      hue = 42 + ((score - 6) * 18); 
   } else if (score >= 5) {
-      hue = 20 + ((score - 5) * 10);
+      // 5.0 -> 24 (Red-Orange), 5.9 -> 36.6 (Rich Orange)
+      hue = 24 + ((score - 5) * 14);
   } else if (score >= 4) {
       hue = 10;
   } else {

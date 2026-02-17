@@ -18,42 +18,37 @@ const ReviewCard: React.FC<ReviewCardProps> = ({ review, sortOption, onClick }) 
     score = review.jellybeanScore;
   }
   
-  // Revised Gradient Logic v4 - "Green with a hint of blue"
-  // 9.0+: 135 (Neon Green) -> 145 (Spring Green). Avoids 150+ (Teal/Blue).
-  // 8.0-8.9: 90 (Lime) -> 125 (True Green).
-  // 7.0-7.9: 55 (Gold) -> 85 (Lime).
-  // 6.0-6.9: 35 (Orange) -> 50 (Golden Orange).
-  // 5.0-5.9: 20 (Rust) -> 30 (Orange).
-  // 4.0-4.9: 10 (Red).
-  // < 4.0: 0 (Deep Red).
+  // Revised Gradient Logic v8
+  // Goal: Make 6s feel more yellow/gold to bridge into 7s, while keeping 5s orange.
   
   let hue = 0;
   let sat = 85;
   let light = 45;
 
   if (score >= 9) {
-      // 9.0 -> 135, 10.0 -> 145. 
-      // This is "Green with a hint of blue", preventing the "Too Blue" look of 150+.
-      hue = 135 + ((score - 9) * 10); 
+      // 9.0 -> 130, 10.0 -> 145 (Neon Green to Spring Green)
+      hue = 130 + ((score - 9) * 15); 
   } else if (score >= 8) {
-      // 8.0 -> 90, 8.9 -> ~125
-      hue = 90 + ((score - 8) * 35); 
+      // 8.0 -> 85, 8.9 -> 125 (Lime to Green)
+      hue = 85 + ((score - 8) * 40); 
   } else if (score >= 7) {
-      // 7.0 -> 55, 7.9 -> ~85
-      hue = 55 + ((score - 7) * 30);
+      // 7.0 -> 60 (Pure Yellow), 7.9 -> 82 (Lime)
+      hue = 60 + ((score - 7) * 22);
   } else if (score >= 6) {
-      // 6.0 -> 35, 6.9 -> ~50
-      hue = 35 + ((score - 6) * 15); 
+      // 6.0 -> 42 (Gold/Amber), 6.9 -> 58 (Yellow-Gold)
+      // Increased starting hue from 35 to 42 to add more "yellow" feel to the 6s
+      hue = 42 + ((score - 6) * 18); 
   } else if (score >= 5) {
-      // 5.0 -> 20, 5.9 -> ~30 (Clearly Orange vs Red)
-      hue = 20 + ((score - 5) * 10);
+      // 5.0 -> 24 (Red-Orange), 5.9 -> 36.6 (Rich Orange)
+      // Ends at ~37 which connects smoothly to 42
+      hue = 24 + ((score - 5) * 14);
   } else if (score >= 4) {
-      // 4.x stays Bright Red
+      // 4.x stays Deep Red (10)
       hue = 10;
   } else {
-      // < 4.0: Deep Red
+      // < 4.0: Dark Red
       hue = 0;
-      light = 35; // Darker
+      light = 35; 
   }
 
   const badgeStyle = {
