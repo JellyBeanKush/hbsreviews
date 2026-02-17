@@ -1,0 +1,5 @@
+{
+  "name": "HBS Reviews",
+  "description": "A Netflix/Letterboxd style dashboard for tracking and visualizing media reviews from Honeybear and Jellybean, powered by Google Sheets.",
+  "requestFramePermissions": []
+}
