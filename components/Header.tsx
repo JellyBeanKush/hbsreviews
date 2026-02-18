@@ -16,7 +16,7 @@ const Header: React.FC<HeaderProps> = ({
   onCategoryChange, 
   searchTerm, 
   onSearchChange,
-  onOpenStats
+  onOpenStats,
 }) => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);

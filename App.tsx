@@ -58,7 +58,7 @@ function App() {
       const lower = searchTerm.toLowerCase();
       result = result.filter(r => 
         r.title.toLowerCase().includes(lower) || 
-        r.category.toLowerCase().includes(lower) ||
+        r.category.toLowerCase().includes(lower) || 
         r.tags.some(t => t.toLowerCase().includes(lower)) ||
         (r.creator && r.creator.toLowerCase().includes(lower))
       );
@@ -122,7 +122,6 @@ function App() {
     return () => observer.disconnect();
   }, [visibleCount, finalReviews.length]);
 
-
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex flex-col items-center justify-center text-white">
@@ -161,10 +160,10 @@ function App() {
       />
 
       <main>
-        <div className="container mx-auto px-4 md:px-6 pt-32 animate-slide-up">
+        <div className="container mx-auto px-2 md:px-6 pt-32 animate-slide-up">
           
           {/* Controls Bar */}
-          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12 border-b border-white/5 pb-4">
+          <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8 border-b border-white/5 pb-4 px-2">
             <div className="space-y-1">
               {(searchTerm || activeCategory !== 'All') && (
                 <h2 className="text-2xl md:text-3xl font-display font-bold text-white tracking-tight">
@@ -177,45 +176,52 @@ function App() {
               </div>
             </div>
 
-            {/* Modern Sort Dropdown */}
-            <div className="relative group min-w-[180px]">
-              <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-500">
-                <ChevronDown className="w-4 h-4 group-hover:text-zinc-300 transition-colors" />
-              </div>
-              <div className="flex items-center bg-zinc-900 border border-white/10 rounded-lg px-4 py-2 hover:border-white/20 transition-all">
-                <ArrowUpDown className="w-3 h-3 text-zinc-500 mr-3" />
-                <select 
-                  value={sortOption}
-                  onChange={(e) => setSortOption(e.target.value as SortOption)}
-                  className="bg-transparent text-xs font-bold uppercase tracking-wide text-zinc-300 appearance-none outline-none cursor-pointer pr-8 w-full"
-                >
-                  <option value="avg-desc" className="bg-zinc-900 text-zinc-300">Highest Average</option>
-                  <option value="avg-asc" className="bg-zinc-900 text-zinc-300">Lowest Average</option>
-                  <option value="latest" className="bg-zinc-900 text-zinc-300">Recently Added</option>
-                  <option value="hb-desc" className="bg-zinc-900 text-zinc-300">Honeybear's Favs</option>
-                  <option value="jb-desc" className="bg-zinc-900 text-zinc-300">Jellybean's Favs</option>
-                  <option value="year-desc" className="bg-zinc-900 text-zinc-300">Newest Release</option>
-                  <option value="year-asc" className="bg-zinc-900 text-zinc-300">Oldest Release</option>
-                  <option value="title-asc" className="bg-zinc-900 text-zinc-300">A-Z</option>
-                </select>
-              </div>
+            {/* Right Controls Group */}
+            <div className="flex items-center gap-3">
+                {/* Sort Dropdown */}
+                <div className="relative group min-w-[160px]">
+                    <div className="absolute inset-y-0 right-3 flex items-center pointer-events-none text-zinc-500">
+                        <ChevronDown className="w-4 h-4 group-hover:text-zinc-300 transition-colors" />
+                    </div>
+                    <div className="flex items-center bg-zinc-900 border border-white/10 rounded-lg px-4 py-2 hover:border-white/20 transition-all">
+                        <ArrowUpDown className="w-3 h-3 text-zinc-500 mr-3" />
+                        <select 
+                        value={sortOption}
+                        onChange={(e) => setSortOption(e.target.value as SortOption)}
+                        className="bg-transparent text-xs font-bold uppercase tracking-wide text-zinc-300 appearance-none outline-none cursor-pointer pr-8 w-full"
+                        >
+                        <option value="avg-desc" className="bg-zinc-900 text-zinc-300">Highest Avg</option>
+                        <option value="avg-asc" className="bg-zinc-900 text-zinc-300">Lowest Avg</option>
+                        <option value="latest" className="bg-zinc-900 text-zinc-300">Latest</option>
+                        <option value="hb-desc" className="bg-zinc-900 text-zinc-300">Honeybear</option>
+                        <option value="jb-desc" className="bg-zinc-900 text-zinc-300">Jellybean</option>
+                        <option value="year-desc" className="bg-zinc-900 text-zinc-300">Newest</option>
+                        <option value="year-asc" className="bg-zinc-900 text-zinc-300">Oldest</option>
+                        <option value="title-asc" className="bg-zinc-900 text-zinc-300">A-Z</option>
+                        </select>
+                    </div>
+                </div>
             </div>
           </div>
 
           {finalReviews.length === 0 ? (
-             <div className="py-32 text-center text-zinc-600">
+             <div className="py-32 text-center text-zinc-600 animate-enter">
                 <p className="text-lg">No reviews found matching your criteria.</p>
                 <button onClick={() => {setSearchTerm(''); setActiveCategory('All');}} className="mt-4 text-zinc-400 hover:text-white underline transition-colors">Clear Filters</button>
              </div>
           ) : (
             <>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 gap-x-5 gap-y-10">
-                {visibleReviews.map(review => (
+              {/* 
+                 Justified Grid Layout with Staggered children
+              */}
+              <div className="flex flex-wrap gap-2 md:gap-3 w-full">
+                {visibleReviews.map((review, i) => (
                   <ReviewCard 
                     key={review.id} 
                     review={review} 
                     onClick={() => setSelectedReview(review)} 
                     sortOption={sortOption}
+                    index={i % 24} // Reset index for pagination chunks
                   />
                 ))}
               </div>

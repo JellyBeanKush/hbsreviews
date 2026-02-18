@@ -25,19 +25,31 @@
             backgroundImage: {
               'glass': 'linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0.02))',
               'noise': 'url("data:image/svg+xml,%3Csvg viewBox=\'0 0 200 200\' xmlns=\'http://www.w3.org/2000/svg\'%3E%3Cfilter id=\'noiseFilter\'%3E%3CfeTurbulence type=\'fractalNoise\' baseFrequency=\'0.65\' numOctaves=\'3\' stitchTiles=\'stitch\'/%3E%3C/filter%3E%3Crect width=\'100%25\' height=\'100%25\' filter=\'url(%23noiseFilter)\' opacity=\'0.05\'/%3E%3C/svg%3E")',
+              'paper': 'url("https://www.transparenttextures.com/patterns/cream-paper.png")',
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out forwards',
               'slide-up': 'slideUp 0.6s cubic-bezier(0.16, 1, 0.3, 1) forwards',
+              'enter': 'enter 0.6s cubic-bezier(0.2, 0.8, 0.2, 1) forwards',
+              'book-open-3d': 'bookOpen3d 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards', // Elastic/Bouncy
+              'modal-pop': 'modalPop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) forwards',
             },
             keyframes: {
               fadeIn: {
                 '0%': { opacity: '0' },
                 '100%': { opacity: '1' },
               },
-              slideUp: {
-                '0%': { opacity: '0', transform: 'translateY(20px)' },
-                '100%': { opacity: '1', transform: 'translateY(0)' },
+              enter: {
+                '0%': { opacity: '0', transform: 'translateY(30px) scale(0.9)' },
+                '100%': { opacity: '1', transform: 'translateY(0) scale(1)' },
+              },
+              bookOpen3d: {
+                '0%': { opacity: '0', transform: 'perspective(2000px) rotateY(-30deg) translateZ(-100px)' },
+                '100%': { opacity: '1', transform: 'perspective(2000px) rotateY(0deg) translateZ(0)' },
+              },
+              modalPop: {
+                '0%': { opacity: '0', transform: 'scale(0.9) translateY(20px)' },
+                '100%': { opacity: '1', transform: 'scale(1) translateY(0)' },
               }
             }
           }
@@ -51,6 +63,7 @@
         min-height: 100vh;
         /* Noise overlay for texture */
         position: relative;
+        overflow-x: hidden;
       }
       body::before {
         content: "";
@@ -79,6 +92,31 @@
       }
       ::-webkit-scrollbar-thumb:hover {
         background: #71717a;
+      }
+
+      /* 3D Utilities */
+      .perspective-1000 {
+        perspective: 1000px;
+      }
+      .perspective-2000 {
+        perspective: 2000px;
+      }
+      .preserve-3d {
+        transform-style: preserve-3d;
+      }
+      .backface-hidden {
+        backface-visibility: hidden;
+      }
+      .origin-left-center {
+        transform-origin: left center;
+      }
+      .rotate-y-0 { transform: rotateY(0deg); }
+      .rotate-y-180 { transform: rotateY(180deg); }
+      
+      /* Book specific hover 3D */
+      .book-spine-3d {
+        transform: rotateY(-90deg) translateX(-12px);
+        transform-origin: left;
       }
     </style>
     <!-- Vite Entry Point -->

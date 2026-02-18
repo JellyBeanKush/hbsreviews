@@ -4,7 +4,7 @@ import {
   ScatterChart, Scatter, XAxis, YAxis, ZAxis, ReferenceLine
 } from 'recharts';
 import { ReviewStats, Review } from '../types';
-import { X, Trophy, Swords, HeartHandshake, TrendingUp, TrendingDown, Crown } from 'lucide-react';
+import { X, Trophy, Swords, HeartHandshake, TrendingUp, TrendingDown } from 'lucide-react';
 
 interface StatsViewProps {
   stats: ReviewStats;
@@ -12,7 +12,6 @@ interface StatsViewProps {
   onClose: () => void;
 }
 
-// Updated COLORS: Yellow (Honey), Pink (Bean), Green, Blue, Purple (new accent), Orange
 const COLORS = ['#fbbf24', '#ec4899', '#22c55e', '#3b82f6', '#a855f7', '#f97316'];
 
 const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
@@ -44,7 +43,7 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
     .sort((a, b) => b.delta - a.delta)
     .slice(0, 5);
 
-  // 4. Sync Rate (Agreement within 1 point)
+  // 4. Sync Rate
   const validReviews = data.filter(r => r.jellybeanScore !== null && r.honeybearScore !== null);
   const agreements = validReviews.filter(r => Math.abs((r.honeybearScore || 0) - (r.jellybeanScore || 0)) <= 1);
   const syncRate = validReviews.length ? Math.round((agreements.length / validReviews.length) * 100) : 0;
@@ -59,7 +58,7 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
       <div className="container mx-auto px-4 py-8">
         
         {/* Header */}
-        <div className="flex justify-between items-center mb-10 border-b border-white/10 pb-6">
+        <div className="flex justify-between items-center mb-10 border-b border-white/10 pb-6 sticky top-0 bg-zinc-950/95 backdrop-blur-sm z-50">
             <div>
               <h2 className="text-3xl font-black text-white tracking-tight uppercase">The Data Vault</h2>
               <p className="text-gray-400">Deep dive into review habits</p>
@@ -70,9 +69,8 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
         </div>
 
         {/* Fun Facts Row */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-12">
-            
-            {/* Sync Rate Card */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+            {/* Sync Rate */}
             <div className="bg-zinc-900 p-6 rounded-2xl border border-white/5 relative overflow-hidden group">
                 <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
                     <HeartHandshake className="w-24 h-24 text-accent" />
@@ -83,7 +81,6 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
                 </div>
                 <p className="text-xs text-gray-500 mt-2">of the time, you agree (within 1 pt)</p>
             </div>
-
             {/* Total Watched */}
             <div className="bg-zinc-900 p-6 rounded-2xl border border-white/5 relative overflow-hidden">
                  <div className="absolute top-0 right-0 p-4 opacity-10">
@@ -93,7 +90,6 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
                 <span className="text-5xl font-black text-white">{stats.totalReviews}</span>
                 <p className="text-xs text-gray-500 mt-2">movies & shows logged</p>
             </div>
-
             {/* Honeybear Stat */}
             <div className="bg-zinc-900 p-6 rounded-2xl border border-honey/20 relative overflow-hidden bg-gradient-to-br from-honey/5 to-transparent">
                 <h3 className="text-honey text-xs font-bold uppercase tracking-widest mb-2">Honeybear's Avg</h3>
@@ -110,7 +106,6 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
                     )}
                 </div>
             </div>
-
              {/* Jellybean Stat */}
              <div className="bg-zinc-900 p-6 rounded-2xl border border-bean/20 relative overflow-hidden bg-gradient-to-br from-bean/5 to-transparent">
                 <h3 className="text-bean text-xs font-bold uppercase tracking-widest mb-2">Jellybean's Avg</h3>
@@ -129,6 +124,7 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
             </div>
         </div>
 
+        {/* Charts Zone */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-12">
             
             {/* The Battleground (Disagreements) */}
@@ -203,9 +199,7 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
                                     return null;
                                 }}
                             />
-                            {/* Diagonal line for perfect agreement */}
                             <ReferenceLine segment={[{ x: 0, y: 0 }, { x: 10, y: 10 }]} stroke="#333" strokeDasharray="5 5" />
-                            
                             <Scatter name="Reviews" data={scatterData} fill="#8884d8">
                                 {scatterData.map((entry, index) => (
                                     <Cell key={`cell-${index}`} fill={entry.diff > 2 ? '#ef4444' : (entry.x > 8 && entry.y > 8 ? '#fbbf24' : '#52525b')} fillOpacity={0.7} />
@@ -218,7 +212,7 @@ const StatsView: React.FC<StatsViewProps> = ({ stats, data, onClose }) => {
         </div>
 
         {/* Category Breakdown (Smaller) */}
-        <div className="bg-zinc-900 p-6 rounded-2xl border border-white/5">
+        <div className="bg-zinc-900 p-6 rounded-2xl border border-white/5 mb-12">
              <h3 className="text-sm font-bold text-gray-400 uppercase tracking-widest mb-4">Genre Breakdown</h3>
              <div className="h-64">
                 <ResponsiveContainer width="100%" height="100%">
